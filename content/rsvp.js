@@ -150,10 +150,27 @@ const OVERLAY_CSS = `
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  /* Theme variables - light theme defaults */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #fff7ed;
+  --bg-quaternary: #f8fafc;
+  --text-primary: #374151;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --text-quaternary: #cbd5e1;
+  --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+  --orp-color: #f97316;
+  --orp-light: #fed7aa;
+  --orp-dark: #ea580c;
+  --shadow: 0 8px 30px rgba(0,0,0,0.14);
+  --shadow-strong: 0 8px 30px rgba(0,0,0,0.4);
+  
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+  box-shadow: var(--shadow);
   min-width: 360px;
   max-width: 540px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -164,76 +181,100 @@ const OVERLAY_CSS = `
 }
 #zrsvp-panel.open { display: flex; }
 
+/* Dark theme overrides */
+#zrsvp-panel.dark-theme {
+  --bg-primary: #1e293b;
+  --bg-secondary: #334155;
+  --bg-tertiary: #2d3a4a;
+  --bg-quaternary: #475569;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-quaternary: #64748b;
+  --border-color: #475569;
+  --border-light: #334155;
+  --orp-color: #fb923c;
+  --orp-light: #7c2d12;
+  --orp-dark: #fbbf24;
+  --shadow: var(--shadow-strong);
+}
+
 #zrsvp-word-area {
   position: relative;
   padding: 22px 32px 18px;
   display: flex; align-items: center; justify-content: center;
   min-height: 64px;
+  background: var(--bg-primary);
+  overflow: hidden;
 }
 #zrsvp-guide {
-  position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+  position: absolute; top: 0; bottom: 0; left: 45%; width: 1px;
   background: rgba(249,115,22,0.2); pointer-events: none;
 }
 #zrsvp-word {
   font-size: 32px;
   font-family: "Courier New", Courier, monospace;
-  line-height: 1; white-space: nowrap; letter-spacing: 0.01em; position: relative;
+  line-height: 1; white-space: nowrap; letter-spacing: 0.01em;
+  position: relative;
+  color: var(--text-primary);
+  transition: margin-left 0.1s ease-out;
 }
-#zrsvp-word .orp  { color: #f97316; font-weight: 700; }
+#zrsvp-word .orp  { color: var(--orp-color); font-weight: 700; }
 #zrsvp-word .hint {
   font-size: 13px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #94a3b8; font-weight: 400;
+  color: var(--text-secondary); font-weight: 400;
 }
 #zrsvp-source {
-  text-align: center; font-size: 10px; color: #94a3b8;
+  text-align: center; font-size: 10px; color: var(--text-tertiary);
   padding: 2px 12px 0; letter-spacing: 0.02em; min-height: 14px;
 }
 #zrsvp-footer {
   display: flex; align-items: center; gap: 2px;
-  padding: 7px 10px; border-top: 1px solid #f1f5f9;
+  padding: 7px 10px; border-top: 1px solid var(--border-light);
+  background: var(--bg-secondary);
 }
 .zrsvp-btn {
   background: none; border: none; cursor: pointer;
   width: 30px; height: 28px; border-radius: 6px; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
-  color: #374151; padding: 0; flex-shrink: 0;
+  color: var(--text-primary); padding: 0; flex-shrink: 0;
 }
-.zrsvp-btn:hover  { background: #f1f5f9; }
-.zrsvp-btn:active { background: #e2e8f0; }
+.zrsvp-btn:hover  { background: var(--bg-tertiary); }
+.zrsvp-btn:active { background: var(--border-light); }
 #zrsvp-wpm {
-  font-size: 12px; color: #64748b; cursor: pointer; padding: 0 8px; height: 28px;
+  font-size: 12px; color: var(--text-secondary); cursor: pointer; padding: 0 8px; height: 28px;
   display: flex; align-items: center; border-radius: 6px; white-space: nowrap;
 }
-#zrsvp-wpm:hover { background: #f1f5f9; }
-#zrsvp-progress { font-size: 11px; color: #cbd5e1; margin-left: auto; padding-right: 4px; white-space: nowrap; }
+#zrsvp-wpm:hover { background: var(--bg-tertiary); }
+#zrsvp-progress { font-size: 11px; color: var(--text-quaternary); margin-left: auto; padding-right: 4px; white-space: nowrap; }
 #zrsvp-hints {
   padding: 3px 12px 7px; display: flex; gap: 10px;
   flex-wrap: wrap; justify-content: center;
 }
-.zrsvp-hint { font-size: 10px; color: #94a3b8; display: flex; align-items: center; gap: 3px; }
+.zrsvp-hint { font-size: 10px; color: var(--text-tertiary); display: flex; align-items: center; gap: 3px; }
 .zrsvp-kbd  {
-  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 3px;
-  padding: 0 4px; font-size: 9px; font-family: monospace; color: #64748b;
+  background: var(--bg-quaternary); border: 1px solid var(--border-light); border-radius: 3px;
+  padding: 0 4px; font-size: 9px; font-family: monospace; color: var(--text-secondary);
 }
-#zrsvp-bar-track { height: 2px; background: #f1f5f9; }
-#zrsvp-bar-fill  { height: 100%; background: #f97316; width: 0%; transition: width 0.1s linear; }
+#zrsvp-bar-track { height: 2px; background: var(--border-light); }
+#zrsvp-bar-fill  { height: 100%; background: var(--orp-color); width: 0%; transition: width 0.1s linear; }
 
 #zrsvp-toolbar-btn {
   display: flex; align-items: center; gap: 5px; padding: 3px 10px;
   border-radius: 6px; background: none; border: 1px solid transparent;
-  cursor: pointer; font-size: 12.5px; font-weight: 600; color: #374151;
+  cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--text-primary);
   white-space: nowrap;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   transition: background 0.12s, border-color 0.12s;
 }
-#zrsvp-toolbar-btn:hover  { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
-#zrsvp-toolbar-btn.active { background: #fff7ed; border-color: #f97316; color: #ea580c; }
+#zrsvp-toolbar-btn:hover  { background: var(--bg-tertiary); border-color: var(--orp-light); color: var(--orp-dark); }
+#zrsvp-toolbar-btn.active { background: var(--bg-tertiary); border-color: var(--orp-color); color: var(--orp-dark); }
 
 .zrsvp-selection-btn {
   display: flex; align-items: center; gap: 4px; padding: 2px 8px;
   background: none; border: none; cursor: pointer;
-  font-size: 13px; color: #f97316; font-weight: 600; border-radius: 4px;
+  font-size: 13px; color: var(--orp-color); font-weight: 600; border-radius: 4px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .zrsvp-selection-btn:hover { background: rgba(249,115,22,0.1); }
@@ -265,6 +306,136 @@ class RSVPState {
   }
 }
 
+// ─── Theme Management ──────────────────────────────────────────────────────
+
+const PREF_THEME = "extensions.zotero-rsvp.theme";
+
+/** Toggle between dark and light themes */
+function toggleTheme(state, doc) {
+  const panel = doc.getElementById("zrsvp-panel");
+  if (!panel) return;
+  
+  const isDark = panel.classList.toggle("dark-theme");
+  const btn = doc.getElementById("zrsvp-theme");
+  if (btn) btn.textContent = isDark ? "☀️" : "🌓";
+  
+  try {
+    Zotero.Prefs.set(PREF_THEME, isDark ? "dark" : "light");
+    log(`Theme set to: ${isDark ? "dark" : "light"}`);
+  } catch (e) {
+    warn("Could not save theme preference: " + e);
+  }
+}
+
+/** Apply theme from saved preference */
+function applyThemeFromPrefs(doc) {
+  let theme = "light";
+  try {
+    theme = Zotero.Prefs.get(PREF_THEME, "light");
+  } catch (e) {
+    warn("Could not read theme preference: " + e);
+  }
+  
+  const panel = doc.getElementById("zrsvp-panel");
+  const btn = doc.getElementById("zrsvp-theme");
+  
+  if (!panel) return;
+  
+  if (theme === "dark") {
+    panel.classList.add("dark-theme");
+    if (btn) btn.textContent = "☀️";
+  } else {
+    panel.classList.remove("dark-theme");
+    if (btn) btn.textContent = "🌓";
+  }
+}
+
+// ─── Navigation: Jump to Cursor ──────────────────────────────────────────────
+
+/**
+ * Get text content from PDF.js text layer for a specific page
+ * Returns array of text items with their positions
+ */
+async function getPdfTextContent(reader) {
+  try {
+    const win = reader._iframeWindow;
+    if (!win?.document) return null;
+    
+    const doc = win.document;
+    const textSpans = doc.querySelectorAll(".textLayer span");
+    
+    if (textSpans.length === 0) return null;
+    
+    // Extract text and build word array
+    const allText = Array.from(textSpans).map(s => s.textContent);
+    const fullText = allText.join(" ");
+    return fullText;
+  } catch (e) {
+    warn("getPdfTextContent: " + e);
+    return null;
+  }
+}
+
+/**
+ * Jump to cursor position in the PDF
+ * Tries to detect current selection or view position
+ */
+async function jumpToCursor(reader, state, doc) {
+  if (!state.loaded || state.totalWords === 0) return;
+  
+  try {
+    const win = reader._iframeWindow;
+    if (!win?.document) {
+      warn("No iframe window for jumpToCursor");
+      return;
+    }
+    
+    const docIframe = win.document;
+    
+    // Try to get text selection
+    const selection = win.getSelection();
+    if (selection && selection.toString().trim()) {
+      const selectedText = selection.toString().trim();
+      const selectedWords = extractWords(selectedText);
+      
+      if (selectedWords.length > 0) {
+        // Find the first selected word in our word array
+        const firstSelectedWord = selectedWords[0].toLowerCase();
+        
+        // Search for this word in the full text
+        for (let i = 0; i < state.words.length; i++) {
+          if (state.words[i].toLowerCase() === firstSelectedWord) {
+            const wasPlaying = state.playing;
+            pause(state, docIframe);
+            state.idx = i;
+            renderWord(state, docIframe);
+            setSourceBadge(docIframe, `CURSOR · word ${i + 1} / ${state.totalWords}`);
+            if (wasPlaying) play(state, docIframe);
+            log(`Jumped to cursor at word index ${i}`);
+            return;
+          }
+        }
+      }
+    }
+    
+    // Fallback: jump to current page
+    const wasPlaying = state.playing;
+    pause(state, docIframe);
+    const page = getCurrentPage(reader);
+    state.idx = state.wordIndexForPage(page);
+    setSourceBadge(docIframe,
+      state.pageOffsets.length > 1
+        ? `PAGE ${page} · word ${state.idx + 1} / ${state.totalWords}`
+        : `Word ${state.idx + 1} / ${state.totalWords}`
+    );
+    renderWord(state, docIframe);
+    if (wasPlaying) play(state, docIframe);
+    log(`Jumped to current page ${page}, word index ${state.idx}`);
+  } catch (e) {
+    warn("jumpToCursor: " + e);
+  }
+}
+
 // ─── DOM helpers ──────────────────────────────────────────────────────────────
 
 function renderWord(state, doc) {
@@ -276,12 +447,22 @@ function renderWord(state, doc) {
   const word = state.currentWord;
   if (word === null) {
     display.innerHTML = `<span class="hint">Press ▶ to start</span>`;
+    display.style.marginLeft = "";
   } else {
     const i = getOrpIndex(word);
+    // Calculate offset to keep ORP character at fixed position (45% from left)
+    // For monospace font, each character is ~1ch wide
+    // Container is centered, so we offset by: (ORP_index - word_length/2) characters
+    // This centers the ORP character at the guide line (45% from left)
+    const offset = i - (word.length - 1) / 2;
+    
     display.innerHTML =
       `<span>${esc(word.slice(0,i))}</span>` +
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
       `<span>${esc(word.slice(i+1))}</span>`;
+    
+    // Apply character-based offset using ch units (monospace character width)
+    display.style.marginLeft = `calc(${offset}ch)`;
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
   if (bar)      bar.style.width = `${state.progressPct}%`;
@@ -325,6 +506,10 @@ function stop(state, doc) {
   pause(state, doc);
   state.idx = 0;
   renderWord(state, doc);
+  // Update source badge to indicate we're at the start
+  setSourceBadge(doc, state.mode === "doc"
+    ? `DOC · p.1 · ${state.totalWords} words total`
+    : `SELECTION · ${state.totalWords} words`);
 }
 
 function togglePlay(state, doc) {
@@ -440,8 +625,10 @@ async function injectOverlay(reader) {
       <button class="zrsvp-btn" id="zrsvp-prev"     title="Previous word (←)">‹</button>
       <button class="zrsvp-btn" id="zrsvp-play"     title="Play / Pause (Space)">▶</button>
       <button class="zrsvp-btn" id="zrsvp-next"     title="Next word (→)">›</button>
-      <button class="zrsvp-btn" id="zrsvp-stop"     title="Stop and reset to beginning">■</button>
+      <button class="zrsvp-btn" id="zrsvp-stop"     title="Go to beginning">⏮</button>
+      <button class="zrsvp-btn" id="zrsvp-theme"    title="Toggle dark/light theme">🌓</button>
       <button class="zrsvp-btn" id="zrsvp-frompage" title="Jump to current page (P)">⤴</button>
+      <button class="zrsvp-btn" id="zrsvp-jumptocursor" title="Jump to cursor (C)">🎯</button>
       <div id="zrsvp-wpm" title="Click: faster  Right-click: slower">300 wpm</div>
       <span id="zrsvp-progress"></span>
       <button class="zrsvp-btn" id="zrsvp-close" title="Close (Esc)">✕</button>
@@ -451,6 +638,8 @@ async function injectOverlay(reader) {
       <span class="zrsvp-hint"><span class="zrsvp-kbd">← →</span> Step</span>
       <span class="zrsvp-hint"><span class="zrsvp-kbd">↑ ↓</span> Speed</span>
       <span class="zrsvp-hint"><span class="zrsvp-kbd">P</span> Jump to page</span>
+      <span class="zrsvp-hint"><span class="zrsvp-kbd">C</span> Jump to cursor</span>
+      <span class="zrsvp-hint"><span class="zrsvp-kbd">T</span> Toggle theme</span>
       <span class="zrsvp-hint"><span class="zrsvp-kbd">Esc</span> Close</span>
     </div>
   `;
@@ -464,6 +653,13 @@ async function injectOverlay(reader) {
   doc.getElementById("zrsvp-next").addEventListener("click",  () => stepForward(state, doc));
   doc.getElementById("zrsvp-stop").addEventListener("click",  () => stop(state, doc));
   doc.getElementById("zrsvp-close").addEventListener("click", () => closePanel(reader, doc));
+  doc.getElementById("zrsvp-theme").addEventListener("click", () => toggleTheme(state, doc));
+  doc.getElementById("zrsvp-jumptocursor").addEventListener("click", () => {
+    jumpToCursor(reader, state, doc).catch(e => warn("jumpToCursor: " + e));
+  });
+  
+  // Apply saved theme preference
+  applyThemeFromPrefs(doc);
 
   doc.getElementById("zrsvp-frompage").addEventListener("click", () => {
     const wasPlaying = state.playing;
@@ -500,6 +696,13 @@ async function injectOverlay(reader) {
       case "p": case "P":
         // Jump to current page without closing
         doc.getElementById("zrsvp-frompage")?.click();
+        break;
+      case "t": case "T":
+        e.preventDefault(); toggleTheme(state, doc);
+        break;
+      case "c": case "C":
+        e.preventDefault();
+        jumpToCursor(reader, state, doc).catch(e => warn("jumpToCursor: " + e));
         break;
       case "Escape": closePanel(reader, doc); break;
     }
