@@ -208,16 +208,16 @@ const OVERLAY_CSS = `
   overflow: hidden;
 }
 #zrsvp-guide {
-  position: absolute; top: 0; bottom: 0; left: 45%; width: 1px;
+  position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
   background: rgba(249,115,22,0.2); pointer-events: none;
 }
 #zrsvp-word {
   font-size: 32px;
   font-family: "Courier New", Courier, monospace;
   line-height: 1; white-space: nowrap; letter-spacing: 0.01em;
-  position: relative;
   color: var(--text-primary);
-  transition: margin-left 0.1s ease-out;
+  /* Keep word centered - NO movement between words for proper RSVP */
+  margin: 0 auto;
 }
 #zrsvp-word .orp  { color: var(--orp-color); font-weight: 700; }
 #zrsvp-word .hint {
@@ -278,6 +278,13 @@ const OVERLAY_CSS = `
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .zrsvp-selection-btn:hover { background: rgba(249,115,22,0.1); }
+
+/* Word highlighting in PDF text layer */
+.zrsvp-current-word {
+  background-color: rgba(249, 115, 22, 0.3) !important;
+  border-radius: 2px;
+  transition: background-color 0.15s ease-out;
+}
 `;
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -347,6 +354,58 @@ function applyThemeFromPrefs(doc) {
   } else {
     panel.classList.remove("dark-theme");
     if (btn) btn.textContent = "🌓";
+  }
+}
+
+// ─── Word Highlighting in PDF ──────────────────────────────────────────────
+
+/**
+ * Highlight current word in PDF text layer for easy navigation back
+ */
+function highlightCurrentWord(reader, state) {
+  try {
+    const win = reader._iframeWindow;
+    if (!win?.document) return;
+    
+    const pdfDoc = win.document;
+    
+    // Clear previous highlight
+    const oldHighlights = pdfDoc.querySelectorAll(".zrsvp-current-word");
+    oldHighlights.forEach(el => {
+      el.classList.remove("zrsvp-current-word");
+      el.style.backgroundColor = "";
+    });
+    
+    if (!state.loaded || !state.currentWord) return;
+    
+    // Find current word in PDF text layer
+    const textSpans = pdfDoc.querySelectorAll(".textLayer span");
+    const currentWordLower = state.currentWord.toLowerCase();
+    
+    // Track which word index we're at
+    let wordCount = 0;
+    for (let span of textSpans) {
+      const spanText = span.textContent.trim();
+      if (!spanText) continue;
+      
+      const spanWords = extractWords(spanText);
+      for (let w of spanWords) {
+        if (wordCount === state.idx) {
+          // Found our word!
+          span.classList.add("zrsvp-current-word");
+          span.style.backgroundColor = "rgba(249, 115, 22, 0.3)";
+          
+          // Scroll to make visible
+          setTimeout(() => {
+            span.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 50);
+          return;
+        }
+        wordCount++;
+      }
+    }
+  } catch (e) {
+    // Silently fail - highlighting is optional
   }
 }
 
@@ -447,25 +506,22 @@ function renderWord(state, doc) {
   const word = state.currentWord;
   if (word === null) {
     display.innerHTML = `<span class="hint">Press ▶ to start</span>`;
-    display.style.marginLeft = "";
   } else {
     const i = getOrpIndex(word);
-    // Calculate offset to keep ORP character at fixed position (45% from left)
-    // For monospace font, each character is ~1ch wide
-    // Container is centered, so we offset by: (ORP_index - word_length/2) characters
-    // This centers the ORP character at the guide line (45% from left)
-    const offset = i - (word.length - 1) / 2;
-    
     display.innerHTML =
       `<span>${esc(word.slice(0,i))}</span>` +
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
       `<span>${esc(word.slice(i+1))}</span>`;
-    
-    // Apply character-based offset using ch units (monospace character width)
-    display.style.marginLeft = `calc(${offset}ch)`;
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
   if (bar)      bar.style.width = `${state.progressPct}%`;
+  
+  // Highlight current word in PDF text layer
+  try {
+    highlightCurrentWord(reader, state);
+  } catch (e) {
+    // Silently fail - highlighting is optional
+  }
 }
 
 function updatePlayBtn(state, doc) {
@@ -684,29 +740,43 @@ async function injectOverlay(reader) {
   wpmEl.addEventListener("click",       ()  => changeSpeed(state, doc, "up"));
   wpmEl.addEventListener("contextmenu", (e) => { e.preventDefault(); changeSpeed(state, doc, "down"); });
 
+  // Use capture phase to ensure we catch keydown events before PDF.js
   doc.addEventListener("keydown", e => {
     if (!panel.classList.contains("open")) return;
+    
+    // Prevent default for all our shortcuts to stop PDF.js from handling them
+    const shortcuts = new Set([
+      " ", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+      "p", "P", "c", "C", "t", "T", "Escape"
+    ]);
+    
+    if (shortcuts.has(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Don't handle if user is typing in an input field
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    
     switch (e.key) {
-      case " ":          e.preventDefault(); togglePlay(state, doc); break;
-      case "ArrowLeft":  e.preventDefault(); stepBack(state, doc); break;
-      case "ArrowRight": e.preventDefault(); stepForward(state, doc); break;
-      case "ArrowUp":    e.preventDefault(); changeSpeed(state, doc, "up"); break;
-      case "ArrowDown":  e.preventDefault(); changeSpeed(state, doc, "down"); break;
+      case " ":          togglePlay(state, doc); break;
+      case "ArrowLeft":  stepBack(state, doc); break;
+      case "ArrowRight": stepForward(state, doc); break;
+      case "ArrowUp":    changeSpeed(state, doc, "up"); break;
+      case "ArrowDown":  changeSpeed(state, doc, "down"); break;
       case "p": case "P":
-        // Jump to current page without closing
+        // Jump to current page - use the button's click handler
         doc.getElementById("zrsvp-frompage")?.click();
         break;
       case "t": case "T":
-        e.preventDefault(); toggleTheme(state, doc);
+        toggleTheme(state, doc);
         break;
       case "c": case "C":
-        e.preventDefault();
         jumpToCursor(reader, state, doc).catch(e => warn("jumpToCursor: " + e));
         break;
       case "Escape": closePanel(reader, doc); break;
     }
-  });
+  }, true); // Capture phase
 
   log("Overlay injected for item " + reader.itemID);
 }
