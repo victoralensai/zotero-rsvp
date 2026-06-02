@@ -1,11 +1,11 @@
 # ⚡ Zotero RSVP Reader
 
-A Zotero 8 plugin that adds **Rapid Serial Visual Presentation (RSVP)** speed reading to the built-in PDF reader.
+A Zotero plugin that adds **Rapid Serial Visual Presentation (RSVP)** speed reading to the built-in PDF reader.
 
 Words flash one at a time at your chosen speed, using the **Optimal Recognition Point (ORP)** technique — a small orange highlight sits slightly left of centre on each word, anchoring your eye so you can read without moving it.
 
 ![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-orange)
-![Zotero 8](https://img.shields.io/badge/Zotero-8.0%2B-red)
+![Zotero 9](https://img.shields.io/badge/Zotero-9.0%2B-red)
 
 ---
 
@@ -45,7 +45,7 @@ Click the WPM display to speed up, right-click to slow down.
 
 ### Requirements
 
-- Zotero 7.0 or later (tested on Zotero 8.0.4)
+- Zotero 7.0 or later (tested on Zotero 9)
 - PDF must have a text layer (not a scanned image)
 
 ---

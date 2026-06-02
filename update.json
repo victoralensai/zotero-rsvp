@@ -3,11 +3,12 @@
     "zotero-rsvp@local": {
       "updates": [
         {
-          "version": "1.0.0",
-          "update_link": "https://github.com/YOUR_USERNAME/zotero-rsvp/releases/download/v1.0.0/zotero-rsvp-1.0.0.xpi",
+          "version": "1.1.0",
+          "update_link": "https://github.com/YOUR_USERNAME/zotero-rsvp/releases/download/v1.1.0/zotero-rsvp-1.1.0.xpi",
           "applications": {
             "zotero": {
-              "strict_min_version": "7.0"
+              "strict_min_version": "7.0",
+              "strict_max_version": "9.*"
             }
           }
         }

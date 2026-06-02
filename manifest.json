@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "RSVP Reader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Word-by-word RSVP speed reading mode for the Zotero PDF reader",
   "author": "local",
   "applications": {
@@ -9,7 +9,7 @@
       "id": "zotero-rsvp@local",
       "update_url": "https://raw.githubusercontent.com/YOUR_USERNAME/zotero-rsvp/main/update.json",
       "strict_min_version": "7.0",
-      "strict_max_version": "8.*"
+      "strict_max_version": "9.*"
     }
   }
 }
