@@ -209,15 +209,22 @@ const OVERLAY_CSS = `
 }
 #zrsvp-guide {
   position: absolute; top: 0; bottom: 0; left: 45%; width: 1px;
-  background: rgba(249,115,22,0.2); pointer-events: none;
+  background: rgba(249,115,22,0.4); pointer-events: none;
+  z-index: 10;
+}
+#zrsvp-word-container {
+  position: relative;
+  width: 100%;
 }
 #zrsvp-word {
+  position: absolute;
   font-size: 32px;
   font-family: "Courier New", Courier, monospace;
   line-height: 1; white-space: nowrap; letter-spacing: 0.01em;
   color: var(--text-primary);
-  position: relative;
-  transition: margin-left 0.1s ease-out;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left 0.1s ease-out;
 }
 #zrsvp-word .orp  { color: var(--orp-color); font-weight: 700; }
 #zrsvp-word .hint {
@@ -506,24 +513,36 @@ function renderWord(state, doc) {
   const word = state.currentWord;
   if (word === null) {
     display.innerHTML = `<span class="hint">Press ▶ to start</span>`;
-    display.style.marginLeft = "";
+    display.style.left = "50%";
+    display.style.transform = "translateX(-50%)";
   } else {
     const i = getOrpIndex(word);
-    // Proper RSVP: Position word so that the ORP character is at the guide line (45%)
-    // Guide line is at 45%, word container is centered at 50%
-    // We need to shift the word by: (i - (word.length-1)/2) characters
-    // This places the ORP character exactly at the guide line
-    const offset = i - (word.length - 1) / 2;
     
     display.innerHTML =
       `<span>${esc(word.slice(0,i))}</span>` +
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
       `<span>${esc(word.slice(i+1))}</span>`;
     
-    // Apply character-based offset using ch units (monospace character width)
-    // Guide line is at 45%, container is centered at 50%, so base offset is -5%
-    // Then we adjust by the ORP position relative to word center
-    display.style.marginLeft = `calc(-5% + ${offset}ch)`;
+    // Proper RSVP: Position word so that the ORP character is EXACTLY on the guide line (45%)
+    // Calculate based on character count and monospace font
+    // Guide line is at 45% of container width
+    // Each character is approximately the same width in monospace font
+    // We need to position the word so that character at index i is at 45%
+    const container = display.parentElement;
+    if (container) {
+      const containerWidth = container.clientWidth;
+      const charWidth = 32; // Approximate width of monospace char at 32px
+      const guideX = containerWidth * 0.45; // Guide line position in pixels
+      const orpX = i * charWidth; // ORP character position from start of word
+      const wordStartX = guideX - orpX;
+      
+      display.style.left = `${wordStartX}px`;
+      display.style.transform = "translateY(-50%)";
+    } else {
+      // Fallback: center the word
+      display.style.left = "50%";
+      display.style.transform = "translateX(-50%) translateY(-50%)";
+    }
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
   if (bar)      bar.style.width = `${state.progressPct}%`;
@@ -685,7 +704,9 @@ async function injectOverlay(reader) {
   panel.innerHTML = `
     <div id="zrsvp-word-area">
       <div id="zrsvp-guide"></div>
-      <div id="zrsvp-word"><span class="hint">Press ▶ to start</span></div>
+      <div id="zrsvp-word-container">
+        <div id="zrsvp-word"><span class="hint">Press ▶ to start</span></div>
+      </div>
     </div>
     <div id="zrsvp-source"></div>
     <div id="zrsvp-bar-track"><div id="zrsvp-bar-fill"></div></div>
