@@ -208,7 +208,7 @@ const OVERLAY_CSS = `
   overflow: hidden;
 }
 #zrsvp-guide {
-  position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+  position: absolute; top: 0; bottom: 0; left: 45%; width: 1px;
   background: rgba(249,115,22,0.2); pointer-events: none;
 }
 #zrsvp-word {
@@ -216,8 +216,8 @@ const OVERLAY_CSS = `
   font-family: "Courier New", Courier, monospace;
   line-height: 1; white-space: nowrap; letter-spacing: 0.01em;
   color: var(--text-primary);
-  /* Keep word centered - NO movement between words for proper RSVP */
-  margin: 0 auto;
+  position: relative;
+  transition: margin-left 0.1s ease-out;
 }
 #zrsvp-word .orp  { color: var(--orp-color); font-weight: 700; }
 #zrsvp-word .hint {
@@ -506,12 +506,24 @@ function renderWord(state, doc) {
   const word = state.currentWord;
   if (word === null) {
     display.innerHTML = `<span class="hint">Press ▶ to start</span>`;
+    display.style.marginLeft = "";
   } else {
     const i = getOrpIndex(word);
+    // Proper RSVP: Position word so that the ORP character is at the guide line (45%)
+    // Guide line is at 45%, word container is centered at 50%
+    // We need to shift the word by: (i - (word.length-1)/2) characters
+    // This places the ORP character exactly at the guide line
+    const offset = i - (word.length - 1) / 2;
+    
     display.innerHTML =
       `<span>${esc(word.slice(0,i))}</span>` +
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
       `<span>${esc(word.slice(i+1))}</span>`;
+    
+    // Apply character-based offset using ch units (monospace character width)
+    // Guide line is at 45%, container is centered at 50%, so base offset is -5%
+    // Then we adjust by the ORP position relative to word center
+    display.style.marginLeft = `calc(-5% + ${offset}ch)`;
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
   if (bar)      bar.style.width = `${state.progressPct}%`;
@@ -740,8 +752,8 @@ async function injectOverlay(reader) {
   wpmEl.addEventListener("click",       ()  => changeSpeed(state, doc, "up"));
   wpmEl.addEventListener("contextmenu", (e) => { e.preventDefault(); changeSpeed(state, doc, "down"); });
 
-  // Use capture phase to ensure we catch keydown events before PDF.js
-  doc.addEventListener("keydown", e => {
+  // Add keydown handler to both document and window for maximum compatibility
+  const handleKeydown = (e) => {
     if (!panel.classList.contains("open")) return;
     
     // Prevent default for all our shortcuts to stop PDF.js from handling them
@@ -765,8 +777,22 @@ async function injectOverlay(reader) {
       case "ArrowUp":    changeSpeed(state, doc, "up"); break;
       case "ArrowDown":  changeSpeed(state, doc, "down"); break;
       case "p": case "P":
-        // Jump to current page - use the button's click handler
-        doc.getElementById("zrsvp-frompage")?.click();
+        // Jump to current page
+        pause(state, doc);
+        if (state.loaded && state.mode === "doc") {
+          const page = getCurrentPage(reader);
+          state.idx = state.wordIndexForPage(page);
+          setSourceBadge(doc,
+            state.pageOffsets.length > 1
+              ? `DOC · p.${page} · ${state.totalWords} words total`
+              : `DOC · ${state.totalWords} words`
+          );
+          renderWord(state, doc);
+          if (state.playing) play(state, doc);
+        } else {
+          loadText(reader, state, doc, getCurrentPage(reader))
+            .catch(e => warn("frompage reload: " + e));
+        }
         break;
       case "t": case "T":
         toggleTheme(state, doc);
@@ -776,7 +802,11 @@ async function injectOverlay(reader) {
         break;
       case "Escape": closePanel(reader, doc); break;
     }
-  }, true); // Capture phase
+  };
+
+  // Add to both document and window in capture phase
+  doc.addEventListener("keydown", handleKeydown, true);
+  win.addEventListener("keydown", handleKeydown, true);
 
   log("Overlay injected for item " + reader.itemID);
 }
