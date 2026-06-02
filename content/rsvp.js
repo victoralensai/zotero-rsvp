@@ -220,11 +220,10 @@ const OVERLAY_CSS = `
   position: absolute;
   font-size: 32px;
   font-family: "Courier New", Courier, monospace;
-  line-height: 1; white-space: nowrap; letter-spacing: 0.01em;
+  line-height: 1; white-space: nowrap;
   color: var(--text-primary);
   top: 50%;
   transform: translateY(-50%);
-  transition: left 0.1s ease-out;
 }
 #zrsvp-word .orp  { color: var(--orp-color); font-weight: 700; }
 #zrsvp-word .hint {
@@ -523,26 +522,12 @@ function renderWord(state, doc) {
       `<span class="orp">${esc(word[i] ?? "")}</span>` +
       `<span>${esc(word.slice(i+1))}</span>`;
     
-    // Proper RSVP: Position word so that the ORP character is EXACTLY on the guide line (45%)
-    // Calculate based on character count and monospace font
-    // Guide line is at 45% of container width
-    // Each character is approximately the same width in monospace font
-    // We need to position the word so that character at index i is at 45%
-    const container = display.parentElement;
-    if (container) {
-      const containerWidth = container.clientWidth;
-      const charWidth = 32; // Approximate width of monospace char at 32px
-      const guideX = containerWidth * 0.45; // Guide line position in pixels
-      const orpX = i * charWidth; // ORP character position from start of word
-      const wordStartX = guideX - orpX;
-      
-      display.style.left = `${wordStartX}px`;
-      display.style.transform = "translateY(-50%)";
-    } else {
-      // Fallback: center the word
-      display.style.left = "50%";
-      display.style.transform = "translateX(-50%) translateY(-50%)";
-    }
+    // Position the word perfectly using 'ch' unit (width of 1 character in monospace)
+    // 45% is the guide line position
+    // We go back by i characters (- ${i}ch) 
+    // And shift by half a character (- 0.5ch) to perfectly center the ORP character
+    display.style.left = `calc(45% - ${i}ch - 0.5ch)`;
+    display.style.transform = "translateY(-50%)";
   }
   if (progress) progress.textContent = state.totalWords ? `${state.idx + 1} / ${state.totalWords}` : "";
   if (bar)      bar.style.width = `${state.progressPct}%`;
