@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "1.2.0",
-          "update_link": "https://github.com/YOUR_USERNAME/zotero-rsvp/releases/download/v1.2.0/zotero-rsvp-1.2.0.xpi",
+          "update_link": "https://github.com/victoralensai/zotero-rsvp/releases/download/v1.2.0/zotero-rsvp-1.2.0.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "7.0",
