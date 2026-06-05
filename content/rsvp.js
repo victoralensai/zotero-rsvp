@@ -686,6 +686,7 @@ async function injectOverlay(reader) {
 
   const panel = doc.createElement("div");
   panel.id = "zrsvp-panel";
+  panel.tabIndex = -1; // make focusable
   panel.innerHTML = `
     <div id="zrsvp-word-area">
       <div id="zrsvp-guide"></div>
@@ -755,8 +756,19 @@ async function injectOverlay(reader) {
   });
 
   const wpmEl = doc.getElementById("zrsvp-wpm");
-  wpmEl.addEventListener("click",       ()  => changeSpeed(state, doc, "up"));
-  wpmEl.addEventListener("contextmenu", (e) => { e.preventDefault(); changeSpeed(state, doc, "down"); });
+  wpmEl.addEventListener("mousedown", (e) => {
+    if (e.button === 0) {
+      changeSpeed(state, doc, "up");
+    } else if (e.button === 2) {
+      e.preventDefault();
+      e.stopPropagation();
+      changeSpeed(state, doc, "down");
+    }
+  });
+  wpmEl.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
 
   // Add keydown handler to both document and window for maximum compatibility
   const handleKeydown = (e) => {
@@ -768,13 +780,16 @@ async function injectOverlay(reader) {
       "p", "P", "c", "C", "t", "T", "Escape"
     ]);
     
+    // Don't handle if user is typing in an input field
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    
     if (shortcuts.has(e.key)) {
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
     }
     
-    // Don't handle if user is typing in an input field
-    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (e.type !== "keydown") return;
     
     switch (e.key) {
       case " ":          togglePlay(state, doc); break;
@@ -810,9 +825,13 @@ async function injectOverlay(reader) {
     }
   };
 
-  // Add to both document and window in capture phase
-  doc.addEventListener("keydown", handleKeydown, true);
-  win.addEventListener("keydown", handleKeydown, true);
+  // Add to document, window, and frameElement in capture phase
+  const events = ["keydown", "keypress", "keyup"];
+  for (const ev of events) {
+    doc.addEventListener(ev, handleKeydown, true);
+    win.addEventListener(ev, handleKeydown, true);
+    if (win.frameElement) win.frameElement.addEventListener(ev, handleKeydown, true);
+  }
 
   log("Overlay injected for item " + reader.itemID);
 }
@@ -825,6 +844,7 @@ function openPanel(reader, doc, selectionText) {
   if (!panel) return;
   panel.classList.add("open");
   if (btn) btn.classList.add("active");
+  panel.focus();
 
   const state = reader._rsvpState;
   if (!state) return;
